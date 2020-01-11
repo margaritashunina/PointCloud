@@ -1,5 +1,12 @@
 #include "kdTree.hpp"
 
+void normAngle(double& angle) {
+    if (angle < -PI || angle > PI) {
+        long long cntPI = angle / PI;
+        angle -= cntPI * PI;
+    }
+}
+
 pt::pt(double x, double y, double z) {
     x_ = x;
     y_ = y;
@@ -20,6 +27,39 @@ void pt::getUp(const pt& p) {
     x_ = max(x_, p.x_);
     y_ = max(y_, p.y_);
     z_ = max(z_, p.z_);
+}
+
+void pt::rotateLeft(double alpha) {
+    double r = sqrt(sqr(x_) + sqr(y_));
+    if (abs(r) < EPS) {
+        return;
+    }
+
+    double phi = atan2(y_, x_);
+    phi += alpha;
+
+    x_ = r * cos(phi);
+    y_ = r * sin(phi);
+}
+
+void pt::rotateUp(double alpha, double da) {
+    double r = sqrt(sqr(x_) + sqr(y_) + sqr(z_));
+
+    double teta = asin(z_ / r);
+
+    double newTeta = teta + alpha;
+    normAngle(newTeta);
+
+    da = abs(da);
+    newTeta = max(-PI/2 + da, newTeta);
+    newTeta = min( PI/2 - da, newTeta);
+
+    /// exist phi if |da| > 0 then in Camera all correct
+    double phi = atan2(y_, x_);
+
+    x_ = r * cos(phi) * cos(teta);
+    y_ = r * sin(phi) * cos(teta);
+    z_ = r * sin(teta);
 }
 
 pt pt::operator+ (pt other) {

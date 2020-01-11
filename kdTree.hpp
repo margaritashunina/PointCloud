@@ -9,19 +9,35 @@
 #define max(a, b) (a > b ? a : b)
 #define min(a, b) (a < b ? a : b)
 #define abs(a) (a < 0 ? -a : a)
+#define sqr(x) ((x) * (x))
 
 using std::pair;
-using std::make_pair;
+
+const double EPS = 1e-9;
+const double PI = acos(-1);
+
+void normAngle(double& angle);    /// angle to [-PI, PI]
 
 /// point
 struct pt {
     pt(double x = 0, double y = 0, double z = 0);
 
-    void read(std::ifstream& in); /// read point format [x, y, z]
-    void getDown(const pt& p);    /// x = min(x, P.x) , y and z analogically
-    void getUp(const pt& p);      /// x = max(x, P.x) , y and z analogically
-    pt operator- (pt other);      /// classical vector+ (x1, y1, z1) + (x2, y2, z2) = (x1 + x2, y1 + y2, z1 + z2)
-    pt operator+ (pt other);      /// classical vector- (x1, y1, z1) - (x2, y2, z2) = (x1 - x2, y1 - y2, z1 - z2)
+    void read(std::ifstream& in);  /// read point format [x, y, z]
+    void getDown(const pt& p);     /// x = min(x, P.x) , y and z analogically
+    void getUp(const pt& p);       /// x = max(x, P.x) , y and z analogically
+
+    void rotateLeft(double alpha); /// rotate this vector on alpha angle to left (if alpha < 0 => to right)
+
+    void rotateUp(double alpha, double da = 0);
+    /*
+        rotate this vector on alpha angle to up (if alpha < 0 => to down)
+        da - deltaAngle from board +-PI/2 [-PI/2 + |da|, PI/2 - |da|]
+        da for formulas-rotate
+        if da == 0 and final angle equal +-PI/2 then non-exist case
+    */
+
+    pt operator- (pt other);       /// classical vector+ (x1, y1, z1) + (x2, y2, z2) = (x1 + x2, y1 + y2, z1 + z2)
+    pt operator+ (pt other);       /// classical vector- (x1, y1, z1) - (x2, y2, z2) = (x1 - x2, y1 - y2, z1 - z2)
 
     double x_, y_, z_;
 };
