@@ -1,135 +1,23 @@
 #include "kdTree.hpp"
 
-void normAngle(double& angle) {
-    if (angle < -PI || angle > PI) {
-        long long cntPI = angle / PI;
-        angle -= cntPI * PI;
-    }
-}
-
-pt::pt(double x, double y, double z) {
-    x_ = x;
-    y_ = y;
-    z_ = z;
-}
-
-void pt::read(std::ifstream& in) {
-    in >> x_ >> y_ >> z_;
-}
-
-void pt::getDown(const pt& p) {
-    x_ = min(x_, p.x_);
-    y_ = min(y_, p.y_);
-    z_ = min(z_, p.z_);
-}
-
-void pt::getUp(const pt& p) {
-    x_ = max(x_, p.x_);
-    y_ = max(y_, p.y_);
-    z_ = max(z_, p.z_);
-}
-
-void pt::rotateLeft(double alpha) {
-    double r = sqrt(sqr(x_) + sqr(y_));
-    if (abs(r) < EPS) {
-        return;
-    }
-
-    double phi = atan2(y_, x_);
-    phi += alpha;
-
-    x_ = r * cos(phi);
-    y_ = r * sin(phi);
-}
-
-void pt::rotateUp(double alpha, double da) {
-    double r = sqrt(sqr(x_) + sqr(y_) + sqr(z_));
-
-    double teta = asin(z_ / r);
-
-    double newTeta = teta + alpha;
-    normAngle(newTeta);
-
-    da = abs(da);
-    newTeta = max(-PI/2 + da, newTeta);
-    newTeta = min( PI/2 - da, newTeta);
-
-    /// exist phi if |da| > 0 then in Camera all correct
-    double phi = atan2(y_, x_);
-
-    x_ = r * cos(phi) * cos(teta);
-    y_ = r * sin(phi) * cos(teta);
-    z_ = r * sin(teta);
-}
-
-pt pt::operator+ (pt other) {
-    return pt(x_ + other.x_, y_ + other.y_, z_ + other.z_);
-}
-
-pt pt::operator- (pt other) {
-    return pt(x_ - other.x_, y_ - other.y_, z_ - other.z_);
-}
-
-block::block() {
-    /// default be_ = en_ = (0, 0, 0)
-}
-
-block::block(pt be, pt en) {
-    be_.x_ = min(be.x_, en.x_);
-    be_.y_ = min(be.y_, en.y_);
-    be_.z_ = min(be.z_, en.z_);
-
-    en_.x_ = max(be.x_, en.x_);
-    en_.y_ = max(be.y_, en.y_);
-    en_.z_ = max(be.z_, en.z_);
-}
-
-bool block::checkInPoint(const pt& p) const {
-    return p.x_ >= be_.x_ && p.x_ <= en_.x_ &&
-           p.y_ >= be_.y_ && p.y_ <= en_.y_ &&
-           p.z_ >= be_.z_ && p.z_ <= en_.z_;
-}
-
-pair<block, block> block::split() {
-    double dx = abs(be_.x_ - en_.x_);
-    double dy = abs(be_.y_ - en_.y_);
-    double dz = abs(be_.z_ - en_.z_);
-
-    pt delta; /// = default(0, 0, 0)
-
-    /// init delta
-    if (dx > max(dy, dz)) {
-        delta.x_ = dx / 2;
-    }
-    if (dy > max(dx, dz)) {
-        delta.y_ = dy / 2;
-    }
-    if (dz > max(dx, dy)) {
-        delta.z_ = dz / 2;
-    }
-
-    pt upBe = en_ - delta;
-    pt downEn = be_ + delta;
-
-    return {block(be_, upBe), block(downEn, en_)};
-}
-
 Node::Node() {
     l_ = r_ = -1;
     lc = rc = nullptr;
 }
 
-Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint) {
+Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint, int depht) {
     l_ = l;
     r_ = r;
     b_ = b;
     lc = rc = nullptr;
 
-    if (r_ - l_ + 1 <= boardCntPoint) { /// check leaf
+    if (depht == MAX_DEPHT || r_ - l_ + 1 <= boardCntPoint) { /// check leaf
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();    /// SEED for shuffle
+        shuffle (dataPoint + l_, dataPoint + r_ + 1, std::default_random_engine(seed)); /// shuffle data in leaf
         return;
     }
 
-    pair<block, block> newBloks = b_.split();
+    std::pair<block, block> newBloks = b_.split();
     int lit = l_; /// it in point for check in newBlock.first
     int rit = r_; /// it on non-used point
 
@@ -143,8 +31,8 @@ Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint) {
         }
     }
 
-    lc = new Node(l, rit, newBloks.first, dataPoint, boardCntPoint);  /// created left child
-    rc = new Node(lit, r, newBloks.second, dataPoint, boardCntPoint); /// created right child
+    lc = new Node(l, rit, newBloks.first, dataPoint, boardCntPoint, depht + 1);  /// created left child
+    rc = new Node(lit, r, newBloks.second, dataPoint, boardCntPoint, depht + 1); /// created right child
 }
 
 Node::~Node() {
@@ -182,10 +70,10 @@ void KD::read(std::ifstream& in) {
         dataPoint_[i].read(in);
     }
 
-    boardCntPoint_ = sqrt(n_);
+    boardCntPoint_ = DEFAULT_BOARD_CNT_POINT;
 }
 
-bool KD::checkBuild() {
+bool KD::checkBuild() const {
     return flagBuilded_;
 }
 
@@ -227,7 +115,7 @@ bool KD::build() {
     }
 
     /// created KD-tree
-    root_ = new Node(0, n_ - 1, block(rootBe, rootEn), dataPoint_, boardCntPoint_);
+    root_ = new Node(0, n_ - 1, block(rootBe, rootEn), dataPoint_, boardCntPoint_, 0);
 
     return true;
 }

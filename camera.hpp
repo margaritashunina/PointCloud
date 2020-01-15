@@ -1,32 +1,9 @@
 #pragma once
 
-#include "kdTree.hpp"
+#include "primitives.hpp"
 
 const double SIDE = 1e3;
 const double DEFAULT_DA = PI / 18;
-
-struct Line {
-    Line(pt u, pt v); /// line on two point U and V, if U == V => bad
-    void getNorm();   /// vector-rotate convert to: max(x, y, z) <= 1
-
-    pt s_; /// start point
-    pt p_; /// vector-rotate
-};
-
-struct Rect {
-    Rect();
-    Rect(pt lup, pt rup, pt ldown, pt rdown);
-
-    void rotateLeft(double alpha);             /// rotate rectangle in left on alpha (if alpha < 0 => rotate right)
-    void rotateUp(double alpha, double da);
-    /*
-        rotate rectangle in up on alpha (if alpha < 0 => rotate down)
-        da - delta angle from Camera option da_
-    */
-
-    pt lup_, rup_;      /// left up and right up point on rectangle
-    pt ldown_, rdown_;  /// left down and right down point on rectangle
-};
 
 class Camera {
 public:
@@ -39,12 +16,20 @@ public:
     */
 
     /// all rotate saving pos_, only rotate rectangle item in camera
-    void rotateLeft(double alpha);              /// rotate camera in left on alpha (if alpha < 0 => rotate right)
-    void rotateUp(double alpha);                /// rotate camera in up on alpha (if alpha < 0 => rotate down)
-    void move(double dx, double dy, double dz); /// move Camera on vector(dx, dy, dz)
+    void rotateLeft(double alpha);                                  /// rotate camera in left on alpha (if alpha < 0 => rotate right)
+    void rotateUp(double alpha);                                    /// rotate camera in up on alpha (if alpha < 0 => rotate down)
+    void move(double dx, double dy, double dz);                     /// move Camera on vector(dx, dy, dz)
+    inline bool visiblePoint(const pt& p) const;                    /// return true if point P is visible
+    bool checkLocation(const Plane& plane, const block& b) const;   /// check block relative to the plane
+    bool intersectBlock(const block& b) const;                      /// block intersection check (return true if intersect)
 private:
-    pt pos_;            /// point position
-    Rect rect_;         /// rectangle item in camera
-    double distToRect_; /// distToRect_ = dist(pos_, plane(rect_))
-    double da_;         /// delta-angle for camera up-down rotate [-PI/2 + |da_|, PI/2 - |da|]
+    void initPlane();     /// initial planes in pyramid
+
+    pt pos_;              /// point position
+    Rect rect_;           /// rectangle item in camera [vector-style, this is not real point. Real: pos_ + rect_.()]
+    double distToRect_;   /// distToRect_ = dist(pos_, plane(rect_))
+    double da_;           /// delta-angle for camera up-down rotate [-PI/2 + |da_|, PI/2 - |da_|]
+    Plane up_, down_;     /// planes up-down pyramid-camera
+    Plane left_, right_;  /// planes left-right pyramid-camera
+    Plane front_;         /// front plane of the pyramid section
 };
