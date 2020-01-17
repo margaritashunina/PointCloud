@@ -47,6 +47,10 @@ double pt::dist(const pt& p) const {
     return sqrt(sqr(p.x_ - x_) + sqr(p.y_ - y_) + sqr(p.z_ - z_));
 }
 
+double pt::manhattan() const {
+    return abs(x_) + abs(y_) + abs(z_);
+}
+
 void pt::rotateLeft(double alpha) {
     double r = sqrt(sqr(x_) + sqr(y_));
     if (abs(r) < EPS) {
@@ -233,4 +237,8 @@ std::pair<block, block> block::split() const {
     pt downEn = be_ + delta;
 
     return {block(be_, upBe), block(downEn, en_)};
+}
+
+pt block::getCenter() const {
+    return (be_ + en_) * 0.5;
 }

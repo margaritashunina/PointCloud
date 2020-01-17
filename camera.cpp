@@ -97,3 +97,7 @@ bool Camera::intersectBlock(const block& b) const {
 
     return (checkLocation(left_, b) && checkLocation(right_, b) && checkLocation(up_, b) && checkLocation(down_, b));
 }
+
+pt Camera::getPos() const {
+    return pos_;
+}

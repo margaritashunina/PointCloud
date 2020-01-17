@@ -5,7 +5,7 @@ Node::Node() {
     lc = rc = nullptr;
 }
 
-Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint, int depht) {
+Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint, int depht, double& minDist) {
     l_ = l;
     r_ = r;
     b_ = b;
@@ -14,6 +14,7 @@ Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint, int depht) {
     if (depht == MAX_DEPHT || r_ - l_ + 1 <= boardCntPoint) { /// check leaf
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();    /// SEED for shuffle
         shuffle (dataPoint + l_, dataPoint + r_ + 1, std::default_random_engine(seed)); /// shuffle data in leaf
+        minDist = min(minDist, (b.en_ - b.be_).manhattan());
         return;
     }
 
@@ -31,8 +32,12 @@ Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint, int depht) {
         }
     }
 
-    lc = new Node(l, rit, newBloks.first, dataPoint, boardCntPoint, depht + 1);  /// created left child
-    rc = new Node(lit, r, newBloks.second, dataPoint, boardCntPoint, depht + 1); /// created right child
+    if (l <= rit) {
+        lc = new Node(l, rit, newBloks.first, dataPoint, boardCntPoint, depht + 1, minDist);  /// created left child
+    }
+    if (lit <= r) {
+        rc = new Node(lit, r, newBloks.second, dataPoint, boardCntPoint, depht + 1, minDist); /// created right child
+    }
 }
 
 Node::~Node() {
@@ -44,11 +49,36 @@ Node::~Node() {
     }
 }
 
+const Node* Node::getLchild() const {
+    return lc;
+}
+
+const Node* Node::getRchild() const {
+    return rc;
+}
+
+pt Node::getCenter() const {
+    return b_.getCenter();
+}
+
+bool Node::isLeaf() const {
+    return lc == nullptr && rc == nullptr;
+}
+
+bool Node::checkLeftChild() const {
+    return lc != nullptr;
+}
+
+bool Node::checkRightChild() const {
+    return rc != nullptr;
+}
+
 KD::KD() {
     boardCntPoint_ = n_ = 0;
     flagBuilded_ = false;
     root_ = nullptr;
     dataPoint_ = nullptr;
+    minDist_ = maxDist_ = depth_ = -1;
 }
 
 KD::~KD() {
@@ -70,7 +100,7 @@ void KD::read(std::ifstream& in) {
         dataPoint_[i].read(in);
     }
 
-    boardCntPoint_ = DEFAULT_BOARD_CNT_POINT;
+    boardCntPoint_ = cbrt(n_);
 }
 
 bool KD::checkBuild() const {
@@ -114,8 +144,35 @@ bool KD::build() {
         rootEn.getUp(dataPoint_[i]);
     }
 
+    maxDist_ = (rootBe - rootEn).manhattan();
+    minDist_ = 1e18;
+
     /// created KD-tree
-    root_ = new Node(0, n_ - 1, block(rootBe, rootEn), dataPoint_, boardCntPoint_, 0);
+    root_ = new Node(0, n_ - 1, block(rootBe, rootEn), dataPoint_, boardCntPoint_, 0, minDist_);
+
+    depth_ = log2(maxDist_ / minDist_) - 1;
+    depth_ -= (depth_ == 20); /// special case of further formulas
 
     return true;
+}
+
+const pt* KD::getData(int index) const {
+    return dataPoint_ + index;
+}
+
+const Node* KD::getRoot() const {
+    return root_;
+}
+
+double KD::getMaxDist() const {
+    return maxDist_;
+}
+
+double KD::getMinDist() const {
+    return minDist_;
+}
+
+double KD::getProportion(int x) const {
+    double h = depth_;
+    return (x * (sqr(h) - 20) + sqr(x) * (20 - h)) / (20*h*(h - 1));
 }
