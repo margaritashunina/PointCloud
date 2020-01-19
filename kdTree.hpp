@@ -32,7 +32,8 @@ public:
     KD();
     ~KD();
 
-    void read(std::ifstream& in); /// read n, dataPoint,
+    void randomData(int n, std::mt19937& eng); /// generate random KD (n point with eng)
+    void read(std::ifstream& in);              /// read n, dataPoint,
 
     /// true - work, false - ignored
     bool build();            /// returns false if KD-tree and dataPoint existed, returns false otherwise

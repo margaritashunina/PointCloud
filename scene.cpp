@@ -10,6 +10,10 @@ Scene::~Scene() {
     delete[] buffPoint_;
 }
 
+void Scene::randomData(int n, std::mt19937& eng) {
+    pointCloud_.randomData(n, eng);
+}
+
 void Scene::readScene(std::ifstream& in) {
     pointCloud_.read(in);
 }

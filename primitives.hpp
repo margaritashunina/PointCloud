@@ -5,6 +5,8 @@
 #include <cmath>
 #include <utility>
 #include <fstream>
+#include <random>
+#include <chrono>
 
 #define sqr(x) ((x) * (x))
 
@@ -22,12 +24,13 @@ inline int sgn(double x);      /// return sign x
 struct pt {
     pt(double x = 0, double y = 0, double z = 0);
 
-    void read(std::ifstream& in);   /// read point format [x, y, z]
-    void getDown(const pt& p);      /// x = min(x, P.x) , y and z analogically
-    void getUp(const pt& p);        /// x = max(x, P.x) , y and z analogically
-    void setOptimalNorm();          /// convert to: max(x, y, z) <= 1
-    double dist(const pt& p) const; /// return dist(this, p) [euclid]
-    double manhattan() const;       /// return manhattan norm
+    void randomPoint(std::mt19937& eng); /// (x_, y_, z_) -> (eng, eng, eng)
+    void read(std::ifstream& in);        /// read point format [x, y, z]
+    void getDown(const pt& p);           /// x = min(x, P.x) , y and z analogically
+    void getUp(const pt& p);             /// x = max(x, P.x) , y and z analogically
+    void setOptimalNorm();               /// convert to: max(x, y, z) <= 1
+    double dist(const pt& p) const;      /// return dist(this, p) [euclid]
+    double manhattan() const;            /// return manhattan norm
 
     void rotateLeft(double alpha); /// rotates this vector through alpha degrees to the left (or ti the right if alpha < 0)
 

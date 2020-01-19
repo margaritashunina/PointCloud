@@ -33,10 +33,10 @@ Camera::Camera(double h, double w) {
 
     pos_ = pt(-distToRect_, 0, 0);
 
-    pt lup = pt(0, w / 2, h / 2);
-    pt rup = pt(0, -w / 2, h / 2);
-    pt ldown = pt(0, w / 2, -h / 2);
-    pt rdown = pt(0, -w / 2, -h / 2);
+    pt lup = pt(distToRect_, w / 2, h / 2);
+    pt rup = pt(distToRect_, -w / 2, h / 2);
+    pt ldown = pt(distToRect_, w / 2, -h / 2);
+    pt rdown = pt(distToRect_, -w / 2, -h / 2);
 
     rect_ = Rect(lup, rup, ldown, rdown);
     da_ = DEFAULT_DA;

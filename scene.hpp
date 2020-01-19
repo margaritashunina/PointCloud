@@ -17,10 +17,11 @@ public:
     Scene();
     ~Scene();
 
-    void readScene(std::ifstream& in);    /// read data from file
-    void initScene();                     /// initial Scene (build KD-tree)
-    void clearScene();                    /// clear KD-tree, viewer = default, buffSize_ = DEFAULT_BUFF_SIZE
-    void changeBuffSize(int newBuffSize); /// changed buffSize_ = max(default, min(max, new))
+    void randomData(int n, std::mt19937& eng); /// generate random pointCloud (n point with eng)
+    void readScene(std::ifstream& in);         /// read data from file
+    void initScene();                          /// initial Scene (build KD-tree)
+    void clearScene();                         /// clear KD-tree, viewer = default, buffSize_ = DEFAULT_BUFF_SIZE
+    void changeBuffSize(int newBuffSize);      /// changed buffSize_ = max(default, min(max, new))
 
     void rotateLeftViewer(double alpha);              /// rotate viewer in left on alpha (if alpha < 0 => rotate right)
     void rotateUpViewer(double alpha);                /// rotate viewer in up on alpha (if alpha < 0 => rotate down)

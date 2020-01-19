@@ -20,6 +20,12 @@ pt::pt(double x, double y, double z) {
     z_ = z;
 }
 
+void pt::randomPoint(std::mt19937& eng) {
+    x_ = eng();
+    y_ = eng();
+    z_ = eng();
+}
+
 void pt::read(std::ifstream& in) {
     in >> x_ >> y_ >> z_;
 }

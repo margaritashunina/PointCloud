@@ -86,6 +86,17 @@ KD::~KD() {
     delete[] dataPoint_;
 }
 
+void KD::randomData(int n, std::mt19937& eng) {
+    n_ = n;
+    dataPoint_ = new pt[n_];
+
+    for (int i = 0; i < n_; ++i) {
+        dataPoint_[i].randomPoint(eng);
+    }
+
+    boardCntPoint_ = cbrt(n_);
+}
+
 void KD::read(std::ifstream& in) {
 /*
     format:
