@@ -114,7 +114,7 @@ void PointDisplay::Initialaze() {
 void PointDisplay::InitGraphics() {
     viewPoint = DirectX::XMFLOAT4(0, 0, 0, 0);
     viewVec = DirectX::XMFLOAT4(0, 0, 0, 0);
-    viewVec.y = 1.;
+    viewVec.z = 1.;
     pitch = 0;
     raw = 0;
     vertex* sample = new vertex[NMAX];
@@ -123,30 +123,51 @@ void PointDisplay::InitGraphics() {
     std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
     std::uniform_real_distribution<float> dis(a, b);
 
-    for (int i = 0; i < NMAX; i += 6) {
-        sample[i].x = a;
-        sample[i].y = dis(rng);
-        sample[i].z = dis(rng);
+    float dx = 1. / M, dy = dx;
+    float r = 0.2, R = 0.5 - r;
+    int id = 0;
+    for (int i = -M/2; i < M/2; ++i) {
+        for (int j = -M/2; j < M/2; ++j) {
+            float x = i * dx;
+            float y = j * dy;
+            sample[id].x = x;
+            sample[id].y = y;
+            sample[id].z = sqrt(r * r - R * R - x * x - y * y + 2 * R * sqrt(x * x + y * y));
+            ++id;
 
-        sample[i + 1].x = b;
-        sample[i + 1].y = dis(rng);
-        sample[i + 1].z = dis(rng);
+            sample[id].x = x;
+            sample[id].y = y;
+            sample[id].z = -sqrt(r * r - R * R - x * x - y * y + 2 * R * sqrt(x * x + y * y));
+            ++id;
+        }
+    }
 
-        sample[i + 2].x = dis(rng);
-        sample[i + 2].y = a;
-        sample[i + 2].z = dis(rng);
+    for (int i = 0; i < N; i += 6) {
+        sample[id].x = a;
+        sample[id].y = dis(rng);
+        sample[id].z = dis(rng);
 
-        sample[i + 3].x = dis(rng);
-        sample[i + 3].y = b;
-        sample[i + 3].z = dis(rng);
+        sample[id + 1].x = b;
+        sample[id + 1].y = dis(rng);
+        sample[id + 1].z = dis(rng);
 
-        sample[i + 4].x = dis(rng);
-        sample[i + 4].y = dis(rng);
-        sample[i + 4].z = a;
+        sample[id + 2].x = dis(rng);
+        sample[id + 2].y = a;
+        sample[id + 2].z = dis(rng);
 
-        sample[i + 5].x = dis(rng);
-        sample[i + 5].y = dis(rng);
-        sample[i + 5].z = b;
+        sample[id + 3].x = dis(rng);
+        sample[id + 3].y = b;
+        sample[id + 3].z = dis(rng);
+
+        sample[id + 4].x = dis(rng);
+        sample[id + 4].y = dis(rng);
+        sample[id + 4].z = a;
+
+        sample[id + 5].x = dis(rng);
+        sample[id + 5].y = dis(rng);
+        sample[id + 5].z = b;
+
+        id += 6;
     }
 
     D3D11_BUFFER_DESC bufDescription = { 0 }; 
@@ -245,25 +266,25 @@ void PointDisplay::UpdateViewMatrix() {
     float cosRaw = cos(radRaw);
     float sinRaw = sin(radRaw);
 
-    float scalarX = cosRaw * viewPoint.x - sinRaw * viewPoint.z;
-    float scalarY = sinRaw * sinPitch * viewPoint.x + cosPitch * viewPoint.y + cosRaw * sinPitch * viewPoint.z;
-    float scalarZ = sinRaw * cosPitch * viewPoint.x - sinPitch * viewPoint.y + cosPitch * cosRaw * viewPoint.z;
+    float scalarX = viewPoint.x * cosRaw - viewPoint.z * sinRaw;
+    float scalarY = viewPoint.x * sinPitch * sinRaw + viewPoint.y * cosPitch + viewPoint.z * sinPitch * cosRaw;
+    float scalarZ = viewPoint.x * sinRaw * cosPitch - viewPoint.y * sinPitch + viewPoint.z * cosPitch * cosRaw;
 
     mBufferData.view = DirectX::XMFLOAT4X4(
-        cosRaw, sinRaw * sinPitch, sinRaw * cosPitch, -scalarX,
-        0, cosPitch, -sinPitch, -scalarY,
-        -sinRaw, cosRaw * sinPitch, cosPitch * cosRaw, -scalarZ,
+        cosRaw,               0,        -sinRaw,          scalarX,
+        sinPitch * sinRaw, cosPitch,    sinPitch * cosRaw,  scalarY,
+        cosPitch * sinRaw, -sinPitch,   cosPitch * cosRaw,  scalarZ, 
         0, 0, 0, 1
     );
 }
 
-void PointDisplay::Update(float dx, float dy, float dRaw, float dPitch) {
+void PointDisplay::Update(float df, float dlr, float dRaw, float dPitch) {
     pitch += dPitch;
-    if (pitch > 90.) {
-        pitch = 90.;
+    if (pitch > 85.) {
+        pitch = 85.;
     }
-    if (pitch < -90.) {
-        pitch = -90.;
+    if (pitch < -85.) {
+        pitch = -85.;
     }
 
     raw += dRaw;
@@ -282,14 +303,24 @@ void PointDisplay::Update(float dx, float dy, float dRaw, float dPitch) {
     float cosRaw = cos(radRaw);
     float sinRaw = sin(radRaw);
 
-    viewVec.x = cosRaw * cosPitch;
-    viewVec.z = sinRaw * cosPitch;
+    viewVec.z = cosRaw * cosPitch;
+    viewVec.x = sinRaw * cosPitch;
     viewVec.y = sinPitch;
 
-    viewPoint.x += viewVec.x * dx;
-    viewPoint.y += viewVec.y * dx;
-    viewPoint.z += viewVec.z * dx;
+    viewPoint.x += viewVec.x * df;
+    viewPoint.y -= viewVec.y * df;
+    viewPoint.z += viewVec.z * df;
+
+    float sideVecx = -viewVec.z;
+    float sideVecz = viewVec.x;
+    float len = sqrt(sideVecx * sideVecx + sideVecz * sideVecz);
     
+    sideVecx /= len;
+    sideVecz /= len;
+
+    viewPoint.x += sideVecx * dlr;
+    viewPoint.z += sideVecz * dlr;
+
     UpdateViewMatrix();
     UpdateMatrixBuffer();
 }
@@ -297,7 +328,8 @@ void PointDisplay::Update(float dx, float dy, float dRaw, float dPitch) {
 void PointDisplay::Render() {
     context->OMSetRenderTargets(1, rendertarget.GetAddressOf(), nullptr);
 
-    float color[] = {0, 0, 0, 1.0f}; //BACKGROUND COLOR
+    //float color[] = {0, 0, 0, 1.0}; //BACKGROUND COLOR
+    float color[] = {1.0, 1.0, 1.0, 1.0}; //BACKGROUND COLOR
     context->ClearRenderTargetView(rendertarget.Get(), color);
 
     UINT vertexSize = sizeof(vertex);

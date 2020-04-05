@@ -12,6 +12,8 @@ using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 using namespace Platform;
 
+const float SEN = 0.02;
+
 
 // the class definition for the core "framework" of our app
 ref class App sealed : public IFrameworkView {

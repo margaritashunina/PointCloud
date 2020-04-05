@@ -18,7 +18,9 @@ using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 using namespace Platform;
 
-const int NMAX = 300000;
+const int M = 222;
+const int N = M * M * 6 / 4;
+const int NMAX = 2 * M * M + N;
 
 const float PI = acos(-1.);
 
@@ -37,7 +39,7 @@ float getRand(std::mt19937& rng);
 class PointDisplay{
 public:
 	void Initialaze();
-	void Update(float dx, float dy, float dRaw, float dPitch);
+	void Update(float df, float dlr, float dRaw, float dPitch);
 	void Render();
 	void newSetOfPoints();
 

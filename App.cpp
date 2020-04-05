@@ -81,16 +81,16 @@ void App::PointerReleased(CoreWindow^ Window, PointerEventArgs^ Arg) {
 void App::KeyDown(CoreWindow^ Window, KeyEventArgs^ Args) {
     VirtualKey key = Args->VirtualKey;
     if (key == (VirtualKey)87) {
-        display.Update(0.1, 0, 0, 0);
+        display.Update(SEN, 0, 0, 0);
     }
     if (key == (VirtualKey)83) {
-        display.Update(-0.1, 0, 0, 0);
+        display.Update(-SEN, 0, 0, 0);
     }
     if (key == (VirtualKey)65) {
-        display.Update(0, -0.1, 0, 0);
+        display.Update(0, -SEN, 0, 0);
     }
     if (key == (VirtualKey)68) {
-        display.Update(0, 0.1, 0, 0);
+        display.Update(0, SEN, 0, 0);
     }
     if (key == (VirtualKey)13) {
         display.newSetOfPoints();
