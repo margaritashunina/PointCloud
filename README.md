@@ -3,3 +3,6 @@
 ![Image description](https://github.com/margaritashunina/PointCloud/blob/gui/pictures/1.png)
 ![Image description](https://github.com/margaritashunina/PointCloud/blob/gui/pictures/2.png)
 ![Image description](https://github.com/margaritashunina/PointCloud/blob/gui/pictures/3.png)
+![Image description](https://github.com/margaritashunina/PointCloud/blob/gui/pictures/4.png)
+![Image description](https://github.com/margaritashunina/PointCloud/blob/gui/pictures/5.png)
+![Image description](https://github.com/margaritashunina/PointCloud/blob/gui/pictures/6.png)
