@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <queue>
+#include <functional>
 
 const int DEFAULT_BUFF_SIZE = 1e6;
 const int     MAX_BUFF_SIZE = 1e7;
@@ -17,11 +18,14 @@ public:
     Scene();
     ~Scene();
 
-    void randomData(int n, std::mt19937& eng); /// generate random pointCloud (n point with eng)
-    void readScene(std::ifstream& in);         /// read data from file
-    void initScene();                          /// initial Scene (build KD-tree)
-    void clearScene();                         /// clear KD-tree, viewer = default, buffSize_ = DEFAULT_BUFF_SIZE
-    void changeBuffSize(int newBuffSize);      /// changed buffSize_ = max(default, min(max, new))
+    void deleteData();                                  /// delete data in KD
+    const pt* getData(int& sz) const;                   /// pointer to data in KD
+    void randomData(int n, std::mt19937& eng);          /// generate random pointCloud (n point with eng)
+    void readScene(std::ifstream& in);                  /// read data from file
+    void initScene();                                   /// initial Scene (build KD-tree)
+    void clearScene();                                  /// clear KD-tree, viewer = default, buffSize_ = DEFAULT_BUFF_SIZE
+    void changeBuffSize(int newBuffSize);               /// changed buffSize_ = max(default, min(max, new))
+    void setUwpPaint(std::function<void(int, int)>& f); /// set uwpPaint_
 
     void rotateLeftViewer(double alpha);              /// rotate viewer in left on alpha (if alpha < 0 => rotate right)
     void rotateUpViewer(double alpha);                /// rotate viewer in up on alpha (if alpha < 0 => rotate down)
@@ -30,11 +34,11 @@ public:
     bool calcFrame(); /// calculate visible points and save point in the buffer [return true if existed KD.build]
 
 private:
-    void addToBuffer(const Node*& u, int cntPoint); /// add points to buffer from dataPoint{board(u, cntPoint)}
+    void paint(int start, int cntPoint); /// painted dataPoint{board(u, cntPoint)}
+    std::function<void(int, int)> uwpPaint_;
 
     Camera viewer_;
     KD     pointCloud_;
-    pt*    buffPoint_;   /// saved point from pointCloud_
     int    buffSize_;    /// size buffPoint_
     int    tmpBuffSize_; /// size buffer for specific frame
 };

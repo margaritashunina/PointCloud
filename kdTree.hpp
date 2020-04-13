@@ -40,7 +40,8 @@ public:
     bool checkBuild() const; /// returns false if build hasn't started yet, returns true if KD-tree and dataPoint existed
     bool clear();            /// returns false if KD-tree and dataPoint don't exist, returns true if KD-tree and dataPoint existed and was cleared
 
-    const pt* getData(int index) const; /// return (dataPoint_ + index), if index >= n_ => bad situation
+    void deleteData();                  /// deleted dataPoint_
+    const pt* getData(int& sz) const;   /// return dataPoint_
     const Node* getRoot() const;        /// return root_
     double getMaxDist() const;          /// return maxDist_
     double getMinDist() const;          /// return minDist_

@@ -167,8 +167,13 @@ bool KD::build() {
     return true;
 }
 
-const pt* KD::getData(int index) const {
-    return dataPoint_ + index;
+const pt* KD::getData(int& sz) const {
+    sz = n_;
+    return dataPoint_;
+}
+
+void KD::deleteData() {
+    delete[] dataPoint_;
 }
 
 const Node* KD::getRoot() const {

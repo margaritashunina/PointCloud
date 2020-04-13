@@ -2,12 +2,20 @@
 
 Scene::Scene() {
     buffSize_ = DEFAULT_BUFF_SIZE;
-    buffPoint_ = new pt [MAX_BUFF_SIZE];
     tmpBuffSize_ = 0;
+    uwpPaint_ = nullptr;
 }
 
 Scene::~Scene() {
-    delete[] buffPoint_;
+    ///
+}
+
+void Scene::deleteData() {
+    pointCloud_.deleteData();
+}
+
+const pt* Scene::getData(int& sz) const {
+    return pointCloud_.getData(sz);
 }
 
 void Scene::randomData(int n, std::mt19937& eng) {
@@ -45,14 +53,17 @@ void Scene::moveViewer(double dx, double dy, double dz) {
     viewer_.move(dx, dy, dz);
 }
 
-void Scene::addToBuffer(const Node*& u, int cntPoint) {
-    cntPoint = min(cntPoint, buffSize_ - tmpBuffSize_);
+void Scene::setUwpPaint(std::function<void(int, int)>& f) {
+    uwpPaint_ = f;
+}
+
+void Scene::paint(int start, int cntPoint) {
+    cntPoint = max(0, min(cntPoint, buffSize_ - tmpBuffSize_));
     if (!cntPoint) {
         return;
     }
 
-    const pt* startDataPointer = pointCloud_.getData(u->l_);
-    memcpy(buffPoint_ + tmpBuffSize_, startDataPointer, cntPoint * sizeof(pt));
+    uwpPaint_(start, cntPoint);
     tmpBuffSize_ += cntPoint;
 }
 
@@ -102,7 +113,7 @@ bool Scene::calcFrame() {
                 int cntPoint = u->r_ - u->l_ + 1;
                 int cntPointWithProportion = min(cntPoint, int(proportion * cntPoint)); /// for proportion > 1 (eps)
 
-                addToBuffer(u, cntPointWithProportion);
+                paint(u->l_, cntPointWithProportion);
             } else { /// if the block is close
                 if (u->checkLeftChild()) {
                     q.push(u->getLchild());
