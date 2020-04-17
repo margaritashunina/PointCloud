@@ -31,12 +31,12 @@ Camera::Camera(double h, double w) {
 
     distToRect_ = w * cos(PI / 6);
 
-    pos_ = pt(-distToRect_, 0, 0);
+    pos_ = pt(0, 0, 0);
 
-    pt lup = pt(distToRect_, w / 2, h / 2);
-    pt rup = pt(distToRect_, -w / 2, h / 2);
-    pt ldown = pt(distToRect_, w / 2, -h / 2);
-    pt rdown = pt(distToRect_, -w / 2, -h / 2);
+    pt lup = pt(-w / 2, h / 2, distToRect_);
+    pt rup = pt(w / 2, h / 2, distToRect_);
+    pt ldown = pt(-w / 2, -h / 2, distToRect_);
+    pt rdown = pt(w / 2, -h / 2, distToRect_);
 
     rect_ = Rect(lup, rup, ldown, rdown);
     da_ = DEFAULT_DA;
@@ -60,7 +60,7 @@ void Camera::move(double dx, double dy, double dz) {
     initPlane();
 }
 
-inline bool Camera::visiblePoint(const pt& p) const {
+bool Camera::visiblePoint(const pt& p) const {
     return up_.getPositionPoint(p)    >= 0 &&
            down_.getPositionPoint(p)  >= 0 &&
            left_.getPositionPoint(p)  >= 0 &&

@@ -1,6 +1,6 @@
 #include "primitives.hpp"
 
-inline int sgn(double x) {
+int sgn(double x) {
     if (abs(x) < EPS) {
         return 0;
     }
@@ -10,10 +10,6 @@ inline int sgn(double x) {
     return 1;
 }
 
-void normAngle(double& angle) {
-    angle = fmod(angle, PI);
-}
-
 pt::pt(double x, double y, double z) {
     x_ = x;
     y_ = y;
@@ -21,9 +17,9 @@ pt::pt(double x, double y, double z) {
 }
 
 void pt::randomPoint(std::mt19937& eng) {
-    x_ = eng();
-    y_ = eng();
-    z_ = eng();
+    x_ = eng() / 1e7;
+    y_ = eng() / 1e7;
+    z_ = eng() / 1e7;
 }
 
 void pt::read(std::ifstream& in) {
@@ -58,36 +54,35 @@ double pt::manhattan() const {
 }
 
 void pt::rotateLeft(double alpha) {
-    double r = sqrt(sqr(x_) + sqr(y_));
+    double r = sqrt(sqr(x_) + sqr(z_));
     if (abs(r) < EPS) {
         return;
     }
 
-    double phi = atan2(y_, x_);
+    double phi = atan2(z_, x_);
     phi += alpha;
 
     x_ = r * cos(phi);
-    y_ = r * sin(phi);
+    z_ = r * sin(phi);
 }
 
 void pt::rotateUp(double alpha, double da) {
     double r = sqrt(sqr(x_) + sqr(y_) + sqr(z_));
 
-    double teta = asin(z_ / r);
+    double teta = asin(y_ / r);
 
     double newTeta = teta + alpha;
-    normAngle(newTeta);
 
     da = abs(da);
     newTeta = max(-PI/2 + da, newTeta);
     newTeta = min( PI/2 - da, newTeta);
 
     /// exist phi if |da| > 0 then in Camera all correct
-    double phi = atan2(y_, x_);
+    double phi = atan2(z_, x_);
 
-    x_ = r * cos(phi) * cos(teta);
-    y_ = r * sin(phi) * cos(teta);
-    z_ = r * sin(teta);
+    x_ = r * cos(phi) * cos(newTeta);
+    z_ = r * sin(phi) * cos(newTeta);
+    y_ = r * sin(newTeta);
 }
 
 pt pt::operator+ (pt other) const {
@@ -158,7 +153,7 @@ void Plane::invertNormal() {
     d_ = -d_;
 }
 
-inline int Plane::getPositionPoint(const pt& p) const {
+int Plane::getPositionPoint(const pt& p) const {
     return sgn(a_ * p.x_ + b_ * p.y_ + c_ * p.z_ + d_);
 }
 

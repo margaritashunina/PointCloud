@@ -25,7 +25,6 @@ public:
     void initScene();                                   /// initial Scene (build KD-tree)
     void clearScene();                                  /// clear KD-tree, viewer = default, buffSize_ = DEFAULT_BUFF_SIZE
     void changeBuffSize(int newBuffSize);               /// changed buffSize_ = max(default, min(max, new))
-    void setUwpPaint(std::function<void(int, int)>& f); /// set uwpPaint_
 
     void rotateLeftViewer(double alpha);              /// rotate viewer in left on alpha (if alpha < 0 => rotate right)
     void rotateUpViewer(double alpha);                /// rotate viewer in up on alpha (if alpha < 0 => rotate down)
@@ -35,7 +34,6 @@ public:
 
 private:
     void paint(int start, int cntPoint); /// painted dataPoint{board(u, cntPoint)}
-    std::function<void(int, int)> uwpPaint_;
 
     Camera viewer_;
     KD     pointCloud_;

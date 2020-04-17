@@ -3,7 +3,6 @@
 Scene::Scene() {
     buffSize_ = DEFAULT_BUFF_SIZE;
     tmpBuffSize_ = 0;
-    uwpPaint_ = nullptr;
 }
 
 Scene::~Scene() {
@@ -53,17 +52,14 @@ void Scene::moveViewer(double dx, double dy, double dz) {
     viewer_.move(dx, dy, dz);
 }
 
-void Scene::setUwpPaint(std::function<void(int, int)>& f) {
-    uwpPaint_ = f;
-}
-
 void Scene::paint(int start, int cntPoint) {
     cntPoint = max(0, min(cntPoint, buffSize_ - tmpBuffSize_));
     if (!cntPoint) {
         return;
     }
 
-    uwpPaint_(start, cntPoint);
+    ///
+
     tmpBuffSize_ += cntPoint;
 }
 

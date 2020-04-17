@@ -14,7 +14,7 @@ Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint, int depht, d
     if (depht == MAX_DEPHT || r_ - l_ + 1 <= boardCntPoint) { /// check leaf
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();    /// SEED for shuffle
         shuffle (dataPoint + l_, dataPoint + r_ + 1, std::default_random_engine(seed)); /// shuffle data in leaf
-        minDist = min(minDist, (b.en_ - b.be_).manhattan());
+        minDist = (minDist < 0 ? ((b.en_ - b.be_).manhattan()) : (min(minDist, (b.en_ - b.be_).manhattan())));
         return;
     }
 
@@ -156,7 +156,7 @@ bool KD::build() {
     }
 
     maxDist_ = (rootBe - rootEn).manhattan();
-    minDist_ = 1e18;
+    minDist_ = -1;
 
     /// created KD-tree
     root_ = new Node(0, n_ - 1, block(rootBe, rootEn), dataPoint_, boardCntPoint_, 0, minDist_);
