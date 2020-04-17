@@ -81,6 +81,10 @@ bool Camera::checkLocation(const Plane& plane, const block& b) const {
 }
 
 bool Camera::intersectBlock(const block& b) const {
+    if (b.checkInPoint(pos_)) {
+        return true;
+    }
+
     if (visiblePoint(b.be_) || visiblePoint(b.en_)) {
         return true;
     }
