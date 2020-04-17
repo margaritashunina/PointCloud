@@ -176,7 +176,8 @@ void Plane::invertNormal() {
 }
 
 int Plane::getPositionPoint(const pt& p) const {
-    return sgn(a_ * p.x_ + b_ * p.y_ + c_ * p.z_ + d_);
+    int res = sgn(a_ * p.x_ + b_ * p.y_ + c_ * p.z_ + d_);
+    return res;
 }
 
 void Plane::setNormal(const pt& p) {
@@ -199,7 +200,7 @@ Rect::Rect(pt lup, pt rup, pt ldown, pt rdown) {
 
 void Rect::initRect() {
     pt du = pt(center_.z_, 0, -center_.x_);
-    pt dv = cross(du, center_);
+    pt dv = cross(du, center_) * (-1);
 
     du.norm();
     dv.norm();

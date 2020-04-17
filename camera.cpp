@@ -87,6 +87,10 @@ bool Camera::intersectBlock(const block& b) const {
         return true;
     }
 
+    if (!checkLocation(front_, b)) {
+        return false;
+    }
+
     if (visiblePoint(b.be_) || visiblePoint(b.en_)) {
         return true;
     }
@@ -97,16 +101,13 @@ bool Camera::intersectBlock(const block& b) const {
         }
     }
 
-    if (!checkLocation(front_, b)) {
-        return false;
-    }
-
     return (checkLocation(left_, b) && checkLocation(right_, b) && checkLocation(up_, b) && checkLocation(down_, b));
 }
 
 void Camera::setViewVector(pt v) {
     rect_.center_ = v;
     rect_.initRect();
+    initPlane();
 }
 
 pt Camera::getPos() const {
