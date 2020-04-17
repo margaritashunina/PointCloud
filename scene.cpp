@@ -90,13 +90,19 @@ bool Scene::calcFrame() {
             }
 
             if (cntWave < DEPTH_WAVES) { /// if firsts waves
+                int cntLeafs = 0;
                 if (u->checkLeftChild()) {
                     q.push(u->getLchild());
+                    ++cntLeafs;
                 }
                 if (u->checkRightChild()) {
                     q.push(u->getRchild());
+                    ++cntLeafs;
                 }
-                continue;
+
+                if (cntLeafs > 0) {
+                    continue;
+                }
             }
 
             pt centerBlock = u->getCenter();
