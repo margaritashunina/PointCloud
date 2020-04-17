@@ -86,6 +86,8 @@ struct Rect {
         da - delta angle from Camera option da_
     */
 
+    pt getCenter() const; /// return center
+
     pt lup_, rup_;     /// left up and right up vector on rectangle
     pt ldown_, rdown_; /// left down and right down vector on rectangle
 };

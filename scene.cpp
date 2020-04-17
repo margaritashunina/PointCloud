@@ -17,6 +17,14 @@ const pt* Scene::getData(int& sz) const {
     return pointCloud_.getData(sz);
 }
 
+pt Scene::getPosViewer() const {
+    return viewer_.getPos();
+}
+
+pt Scene::getViewVector() const {
+    return viewer_.getViewVector();
+}
+
 void Scene::randomData(int n, std::mt19937& eng) {
     pointCloud_.randomData(n, eng);
 }

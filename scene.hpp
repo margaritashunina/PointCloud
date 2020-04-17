@@ -19,7 +19,6 @@ public:
     ~Scene();
 
     void deleteData();                                  /// delete data in KD
-    const pt* getData(int& sz) const;                   /// pointer to data in KD
     void randomData(int n, std::mt19937& eng);          /// generate random pointCloud (n point with eng)
     void readScene(std::ifstream& in);                  /// read data from file
     void initScene();                                   /// initial Scene (build KD-tree)
@@ -31,6 +30,10 @@ public:
     void moveViewer(double dx, double dy, double dz); /// move viewer on vector(dx, dy, dz)
 
     bool calcFrame(); /// calculate visible points and save point in the buffer [return true if existed KD.build]
+
+    const pt* getData(int& sz) const; /// pointer to data in KD
+    pt getPosViewer() const;          /// return pos camera
+    pt getViewVector() const;         /// return view vector
 
 private:
     void paint(int start, int cntPoint); /// painted dataPoint{board(u, cntPoint)}

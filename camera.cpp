@@ -29,7 +29,7 @@ Camera::Camera(double h, double w) {
     w *= SIDE;
     h *= SIDE;
 
-    distToRect_ = w * cos(PI / 6);
+    distToRect_ = (h / 2) / tan(35. / 180 * PI);
 
     pos_ = pt(0, 0, 0);
 
@@ -104,4 +104,8 @@ bool Camera::intersectBlock(const block& b) const {
 
 pt Camera::getPos() const {
     return pos_;
+}
+
+pt Camera::getViewVector() const {
+    return rect_.getCenter();
 }

@@ -220,6 +220,10 @@ void Rect::rotateUp(double alpha, double da) {
     rdown_.rotateUp(alpha, da);
 }
 
+pt Rect::getCenter() const {
+    return (lup_ + rdown_) * 0.5;
+}
+
 block::block() {
     /// default constructor be_, en_
 }

@@ -16,7 +16,8 @@ public:
     bool checkLocation(const Plane& plane, const block& b) const; /// check block relative to the plane
     bool intersectBlock(const block& b) const;                    /// block intersection check (return true if intersect)
 
-    pt getPos() const; /// return pos_
+    pt getPos() const;        /// return pos_
+    pt getViewVector() const; /// return view vector
 
 private:
     void initPlane();         /// initial planes in pyramid
