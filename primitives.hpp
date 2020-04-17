@@ -7,6 +7,8 @@
 #include <fstream>
 #include <random>
 #include <chrono>
+#include <vector>
+#include <algorithm>
 
 #define sqr(x) ((x) * (x))
 
@@ -33,7 +35,8 @@ struct pt {
 
     void rotateLeft(double alpha); /// rotates this vector through alpha degrees to the left (or ti the right if alpha < 0)
 
-    void rotateUp(double alpha, double da = 0);
+    double getRotateUp(double alpha, double da); /// return true angle after rotateUp
+    void rotateUp(double alpha, double da);
     /*
         rotates this vector through alpha degrees upwards (if alpha < 0 => downwards)
         da - deltaAngle from board +-PI/2 [-PI/2 + |da|, PI/2 - |da|]
@@ -75,7 +78,8 @@ struct Rect {
     Rect();
     Rect(pt lup, pt rup, pt ldown, pt rdown);
 
-    void rotateLeft(double alpha); /// rotate rectangle in left on alpha (if alpha < 0 => rotate right)
+    void rotateLeft(double alpha);                 /// rotate rectangle in left on alpha (if alpha < 0 => rotate right)
+    double trueRotateUp(double alpha, double da);  /// return true angle, check board[-pi/2 + |da|l pi.2 - |da|]
     void rotateUp(double alpha, double da);
     /*
         rotate rectangle in up on alpha (if alpha < 0 => rotate down)

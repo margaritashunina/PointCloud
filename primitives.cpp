@@ -66,6 +66,21 @@ void pt::rotateLeft(double alpha) {
     z_ = r * sin(phi);
 }
 
+double pt::getRotateUp(double alpha, double da) {
+    double r = sqrt(sqr(x_) + sqr(y_) + sqr(z_));
+
+    double teta = asin(y_ / r);
+
+    double newTeta = teta + alpha;
+
+    da = abs(da);
+
+    newTeta = max(-PI/2 + da, newTeta);
+    newTeta = min( PI/2 - da, newTeta);
+
+    return newTeta - teta;
+}
+
 void pt::rotateUp(double alpha, double da) {
     double r = sqrt(sqr(x_) + sqr(y_) + sqr(z_));
 
@@ -181,7 +196,24 @@ void Rect::rotateLeft(double alpha) {
     rdown_.rotateLeft(alpha);
 }
 
+double Rect::trueRotateUp(double alpha, double da) {
+    std::vector<double> deltaAngle =
+    {
+        lup_.getRotateUp(alpha, da),
+        rup_.getRotateUp(alpha, da),
+        ldown_.getRotateUp(alpha, da),
+        rdown_.getRotateUp(alpha, da)
+    };
+
+    if (alpha < 0) {
+        return *std::max_element(deltaAngle.begin(), deltaAngle.end());
+    } else {
+        return *std::min_element(deltaAngle.begin(), deltaAngle.end());
+    }
+}
+
 void Rect::rotateUp(double alpha, double da) {
+    alpha = trueRotateUp(alpha, da);
     lup_.rotateUp(alpha, da);
     rup_.rotateUp(alpha, da);
     ldown_.rotateUp(alpha, da);
