@@ -31,6 +31,8 @@ public:
 
     bool calcFrame(); /// calculate visible points and save point in the buffer [return true if existed KD.build]
 
+    void setViewVector(pt v);         /// set view vector
+
     const pt* getData(int& sz) const; /// pointer to data in KD
     pt getPosViewer() const;          /// return pos camera
     pt getViewVector() const;         /// return view vector

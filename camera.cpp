@@ -41,6 +41,8 @@ Camera::Camera(double h, double w) {
     rect_ = Rect(lup, rup, ldown, rdown);
     da_ = DEFAULT_DA;
 
+    v_ = pt(0, 0, distToRect_);
+
     initPlane();
 }
 
@@ -100,6 +102,11 @@ bool Camera::intersectBlock(const block& b) const {
     }
 
     return (checkLocation(left_, b) && checkLocation(right_, b) && checkLocation(up_, b) && checkLocation(down_, b));
+}
+
+void Camera::setViewVector(pt v) {
+    rect_.center_ = v;
+    rect_.initRect();
 }
 
 pt Camera::getPos() const {

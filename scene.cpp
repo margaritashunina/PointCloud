@@ -13,6 +13,10 @@ void Scene::deleteData() {
     pointCloud_.deleteData();
 }
 
+void Scene::setViewVector(pt v) {
+    viewer_.setViewVector(v);
+}
+
 const pt* Scene::getData(int& sz) const {
     return pointCloud_.getData(sz);
 }

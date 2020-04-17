@@ -16,8 +16,10 @@ using std::min;
 using std::max;
 using std::abs;
 
-const double EPS = 1e-9;
-const double  PI = acos(-1);
+const double W_DEF = 16;
+const double H_DEF = 9;
+const double   EPS = 1e-9;
+const double    PI = acos(-1);
 
 int sgn(double x);  /// return sign x
 
@@ -30,6 +32,7 @@ struct pt {
     void getDown(const pt& p);           /// x = min(x, P.x) , y and z analogically
     void getUp(const pt& p);             /// x = max(x, P.x) , y and z analogically
     void setOptimalNorm();               /// convert to: max(x, y, z) <= 1
+    void norm();                         /// ||pt|| = 1 (euclid)
     double dist(const pt& p) const;      /// return dist(this, p) [euclid]
     double manhattan() const;            /// return manhattan norm
 
@@ -79,15 +82,17 @@ struct Rect {
     Rect(pt lup, pt rup, pt ldown, pt rdown);
 
     void rotateLeft(double alpha);                 /// rotate rectangle in left on alpha (if alpha < 0 => rotate right)
-    double trueRotateUp(double alpha, double da);  /// return true angle, check board[-pi/2 + |da|l pi.2 - |da|]
     void rotateUp(double alpha, double da);
     /*
         rotate rectangle in up on alpha (if alpha < 0 => rotate down)
         da - delta angle from Camera option da_
     */
 
+    void initRect();      /// rect made out of center
+
     pt getCenter() const; /// return center
 
+    pt center_;        /// center in Rect
     pt lup_, rup_;     /// left up and right up vector on rectangle
     pt ldown_, rdown_; /// left down and right down vector on rectangle
 };

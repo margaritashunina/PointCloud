@@ -45,6 +45,13 @@ void pt::setOptimalNorm() {
     z_ /= d;
 }
 
+void pt::norm() {
+    double d = sqrt(sqr(x_) + sqr(y_) + sqr(z_));
+    x_ /= d;
+    y_ /= d;
+    z_ /= d;
+}
+
 double pt::dist(const pt& p) const {
     return sqrt(sqr(p.x_ - x_) + sqr(p.y_ - y_) + sqr(p.z_ - z_));
 }
@@ -187,41 +194,40 @@ Rect::Rect(pt lup, pt rup, pt ldown, pt rdown) {
     rup_ = rup;
     ldown_ = ldown;
     rdown_ = rdown;
+    center_ = (lup_ + rdown_) * 0.5;
+}
+
+void Rect::initRect() {
+    pt du = pt(center_.z_, 0, -center_.x_);
+    pt dv = cross(du, center_);
+
+    du.norm();
+    dv.norm();
+
+    double w = W_DEF * 0.5;
+    double h = H_DEF * 0.5;
+
+    du = du * w;
+    dv = dv * h;
+
+    rup_ = center_ + du + dv;
+    lup_ = center_ - du + dv;
+    rdown_ = center_ + du - dv;
+    ldown_ = center_ - du - dv;
 }
 
 void Rect::rotateLeft(double alpha) {
-    lup_.rotateLeft(alpha);
-    rup_.rotateLeft(alpha);
-    ldown_.rotateLeft(alpha);
-    rdown_.rotateLeft(alpha);
-}
-
-double Rect::trueRotateUp(double alpha, double da) {
-    std::vector<double> deltaAngle =
-    {
-        lup_.getRotateUp(alpha, da),
-        rup_.getRotateUp(alpha, da),
-        ldown_.getRotateUp(alpha, da),
-        rdown_.getRotateUp(alpha, da)
-    };
-
-    if (alpha < 0) {
-        return *std::max_element(deltaAngle.begin(), deltaAngle.end());
-    } else {
-        return *std::min_element(deltaAngle.begin(), deltaAngle.end());
-    }
+    center_.rotateLeft(alpha);
+    initRect();
 }
 
 void Rect::rotateUp(double alpha, double da) {
-    alpha = trueRotateUp(alpha, da);
-    lup_.rotateUp(alpha, da);
-    rup_.rotateUp(alpha, da);
-    ldown_.rotateUp(alpha, da);
-    rdown_.rotateUp(alpha, da);
+    center_.rotateUp(alpha, da);
+    initRect();
 }
 
 pt Rect::getCenter() const {
-    return (lup_ + rdown_) * 0.5;
+    return center_;
 }
 
 block::block() {
