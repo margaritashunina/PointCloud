@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "primitives.hpp"
 
 int sgn(double x) {
@@ -17,9 +18,9 @@ pt::pt(double x, double y, double z) {
 }
 
 void pt::randomPoint(std::mt19937& eng) {
-    x_ = eng() / 1e7;
-    y_ = eng() / 1e7;
-    z_ = eng() / 1e7;
+    x_ = eng() / 1e9;
+    y_ = eng() / 1e9;
+    z_ = eng() / 1e9;
 }
 
 void pt::read(std::ifstream& in) {
@@ -82,8 +83,8 @@ double pt::getRotateUp(double alpha, double da) {
 
     da = abs(da);
 
-    newTeta = max(-PI/2 + da, newTeta);
-    newTeta = min( PI/2 - da, newTeta);
+    newTeta = max(-PI / 2 + da, newTeta);
+    newTeta = min(PI / 2 - da, newTeta);
 
     return newTeta - teta;
 }
@@ -96,8 +97,8 @@ void pt::rotateUp(double alpha, double da) {
     double newTeta = teta + alpha;
 
     da = abs(da);
-    newTeta = max(-PI/2 + da, newTeta);
-    newTeta = min( PI/2 - da, newTeta);
+    newTeta = max(-PI / 2 + da, newTeta);
+    newTeta = min(PI / 2 - da, newTeta);
 
     /// exist phi if |da| > 0 then in Camera all correct
     double phi = atan2(z_, x_);
@@ -255,8 +256,8 @@ block::block(pt be, pt en) {
 
 bool block::checkInPoint(const pt& p) const {
     return p.x_ >= be_.x_ && p.x_ <= en_.x_ &&
-           p.y_ >= be_.y_ && p.y_ <= en_.y_ &&
-           p.z_ >= be_.z_ && p.z_ <= en_.z_;
+        p.y_ >= be_.y_ && p.y_ <= en_.y_ &&
+        p.z_ >= be_.z_ && p.z_ <= en_.z_;
 }
 
 std::pair<block, block> block::split() const {
@@ -280,7 +281,7 @@ std::pair<block, block> block::split() const {
     pt upBe = en_ - delta;
     pt downEn = be_ + delta;
 
-    return {block(be_, upBe), block(downEn, en_)};
+    return { block(be_, upBe), block(downEn, en_) };
 }
 
 pt block::getCenter() const {

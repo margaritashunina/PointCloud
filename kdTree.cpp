@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "kdTree.hpp"
 
 Node::Node() {
@@ -13,7 +14,7 @@ Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint, int depht, d
 
     if (depht == MAX_DEPHT || r_ - l_ + 1 <= boardCntPoint) { /// check leaf
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();    /// SEED for shuffle
-        shuffle (dataPoint + l_, dataPoint + r_ + 1, std::default_random_engine(seed)); /// shuffle data in leaf
+        shuffle(dataPoint + l_, dataPoint + r_ + 1, std::default_random_engine(seed)); /// shuffle data in leaf
         minDist = (minDist < 0 ? ((b.en_ - b.be_).manhattan()) : (min(minDist, (b.en_ - b.be_).manhattan())));
         return;
     }
@@ -26,7 +27,8 @@ Node::Node(int l, int r, block b, pt* dataPoint, int boardCntPoint, int depht, d
     while (lit <= rit) {
         if (newBloks.first.checkInPoint(dataPoint[lit])) {
             ++lit;
-        } else {
+        }
+        else {
             std::swap(dataPoint[lit], dataPoint[rit]);
             --rit;
         }
@@ -98,15 +100,16 @@ void KD::randomData(int n, std::mt19937& eng) {
 }
 
 void KD::read(std::ifstream& in) {
-/*
-    format:
-    n - count point
-    n string: {xi, yi, zi}
-*/
+    /*
+        format:
+        n - count point
+        n string: {xi, yi, zi}
+    */
 
     in >> n_;
     dataPoint_ = new pt[n_];
 
+    
     for (int i = 0; i < n_; ++i) {
         dataPoint_[i].read(in);
     }
@@ -190,5 +193,5 @@ double KD::getMinDist() const {
 
 double KD::getProportion(int x) const {
     double h = depth_;
-    return (x * (sqr(h) - 20) + sqr(x) * (20 - h)) / (20*h*(h - 1));
+    return (x * (sqr(h) - 20) + sqr(x) * (20 - h)) / (20 * h * (h - 1));
 }

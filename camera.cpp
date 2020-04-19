@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "camera.hpp"
 
 void Camera::initPlane() {
@@ -15,7 +16,7 @@ void Camera::initPlane() {
     front_ = Plane(pos_, cross(ptLup - ptLdown, ptRdown - ptLdown));
 
     ///create reality center [pos_ + center(rect_)]
-    pt center = (ptLup + ptRdown) * 0.5;
+    pt center = pos_ + rect_.center_;//(ptLup + ptRdown) * 0.5;
 
     ///normalization normals
     up_.setNormal(center);
@@ -43,7 +44,7 @@ Camera::Camera(double h, double w) {
 
     v_ = pt(0, 0, distToRect_);
 
-    initPlane();
+    setViewVector(v_);
 }
 
 void Camera::rotateLeft(double alpha) {
@@ -63,10 +64,10 @@ void Camera::move(double dx, double dy, double dz) {
 }
 
 bool Camera::visiblePoint(const pt& p) const {
-    return up_.getPositionPoint(p)    >= 0 &&
-           down_.getPositionPoint(p)  >= 0 &&
-           left_.getPositionPoint(p)  >= 0 &&
-           right_.getPositionPoint(p) >= 0;
+    return up_.getPositionPoint(p) >= 0 &&
+        down_.getPositionPoint(p) >= 0 &&
+        left_.getPositionPoint(p) >= 0 &&
+        right_.getPositionPoint(p) >= 0;
 }
 
 /// if there are points in front and behind the plane
@@ -105,7 +106,8 @@ bool Camera::intersectBlock(const block& b) const {
 }
 
 void Camera::setViewVector(pt v) {
-    rect_.center_ = v;
+    v_ = v * sqrt(sqr(v_.x_) + sqr(v_.y_) + sqr(v_.z_));
+    rect_.center_ = v_;
     rect_.initRect();
     initPlane();
 }

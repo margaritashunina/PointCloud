@@ -70,7 +70,7 @@ struct Plane {
     Plane(pt u, pt v, pt w);                         /// create a plane at three points [u, v, w]
     Plane(pt start, pt norm);                        /// create a plane at point and normal
     void invertNormal();                             /// (a_, b_, c_, _d) -> (-a_, -b_, -c_, -d_) and norm_ *= -1
-    int getPositionPoint(const pt& p) const ;        /// return sgn(plane(p))
+    int getPositionPoint(const pt& p) const;        /// return sgn(plane(p))
     void setNormal(const pt& p);                     /// set this plane to : plane(p) > 0 (point out of plane)
 
     pt     norm_;          /// normal-vector plane

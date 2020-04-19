@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "scene.hpp"
 
 Scene::Scene() {
@@ -13,10 +14,6 @@ void Scene::deleteData() {
     pointCloud_.deleteData();
 }
 
-void Scene::setViewVector(pt v) {
-    viewer_.setViewVector(v);
-}
-
 const pt* Scene::getData(int& sz) const {
     return pointCloud_.getData(sz);
 }
@@ -27,6 +24,10 @@ pt Scene::getPosViewer() const {
 
 pt Scene::getViewVector() const {
     return viewer_.getViewVector();
+}
+
+void Scene::setViewVector(pt v) {
+    viewer_.setViewVector(v);
 }
 
 void Scene::randomData(int n, std::mt19937& eng) {
@@ -64,13 +65,17 @@ void Scene::moveViewer(double dx, double dy, double dz) {
     viewer_.move(dx, dy, dz);
 }
 
+void Scene::setUwpPaint(Microsoft::WRL::ComPtr<ID3D11DeviceContext1> f) {
+    context = f;
+}
+
 void Scene::paint(int start, int cntPoint) {
     cntPoint = max(0, min(cntPoint, buffSize_ - tmpBuffSize_));
     if (!cntPoint) {
         return;
     }
 
-    ///
+    context->Draw(cntPoint, start);
 
     tmpBuffSize_ += cntPoint;
 }
@@ -128,7 +133,8 @@ bool Scene::calcFrame() {
                 int cntPointWithProportion = min(cntPoint, int(proportion * cntPoint)); /// for proportion > 1 (eps)
 
                 paint(u->l_, cntPointWithProportion);
-            } else { /// if the block is close
+            }
+            else { /// if the block is close
                 if (u->checkLeftChild()) {
                     q.push(u->getLchild());
                 }

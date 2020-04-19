@@ -19,6 +19,7 @@ public:
     ~Scene();
 
     void deleteData();                                  /// delete data in KD
+    const pt* getData(int& sz) const;                   /// pointer to data in KD
     void randomData(int n, std::mt19937& eng);          /// generate random pointCloud (n point with eng)
     void readScene(std::ifstream& in);                  /// read data from file
     void initScene();                                   /// initial Scene (build KD-tree)
@@ -29,17 +30,19 @@ public:
     void rotateUpViewer(double alpha);                /// rotate viewer in up on alpha (if alpha < 0 => rotate down)
     void moveViewer(double dx, double dy, double dz); /// move viewer on vector(dx, dy, dz)
 
+    void setUwpPaint(Microsoft::WRL::ComPtr<ID3D11DeviceContext1> f);
+
     bool calcFrame(); /// calculate visible points and save point in the buffer [return true if existed KD.build]
 
     void setViewVector(pt v);         /// set view vector
 
-    const pt* getData(int& sz) const; /// pointer to data in KD
     pt getPosViewer() const;          /// return pos camera
     pt getViewVector() const;         /// return view vector
 
 private:
     void paint(int start, int cntPoint); /// painted dataPoint{board(u, cntPoint)}
 
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext1> context; //Context interface of DirectX, needed to draw DIRECTLY from this class
     Camera viewer_;
     KD     pointCloud_;
     int    buffSize_;    /// size buffPoint_
