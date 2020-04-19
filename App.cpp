@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "App.h"
-#include "PointDisplay.h"
 
 void App::Initialize(CoreApplicationView^ AppView) {
     AppView->Activated += ref new TypedEventHandler
@@ -9,6 +8,8 @@ void App::Initialize(CoreApplicationView^ AppView) {
     PointerLocked = false;
     pointerPosition.x = 0;
     pointerPosition.y = 0;
+
+    dt = ds = alph = bet = 0;
 }
 
 void App::SetWindow(CoreWindow^ Window) {
@@ -27,12 +28,23 @@ void App::Run() {
     display.Initialaze();
 
     float timeFrame = (float)CLOCKS_PER_SEC / 30;
+    //float updateColorFrame = (float)CLOCKS_PER_SEC / 240;
     int start = clock();
+    //int startC = clock();
     while (!WindowClosed) {
         Window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-
+        
         int end = clock();
+
+        /*
+        if ((end - startC) > updateColorFrame) {
+            display.UpdateColors();
+            startC = clock();
+        }
+        */
         if ((end - start) > timeFrame) {
+            display.Update(dt, ds, alph, bet);
+            dt = ds = alph = bet = 0;
             display.Render();
             start = clock();
         }
@@ -55,17 +67,16 @@ void App::PointerMoved(CoreWindow^ Window, PointerEventArgs^ Args) {
     newPos.x = Args->CurrentPoint->Position.X;
     newPos.y = Args->CurrentPoint->Position.Y;
 
-    float dx = (pointerPosition.x - newPos.x) * 90. / 1920.;
-    float dy = (pointerPosition.y - newPos.y) * 90. / 1080.;
+    alph = (pointerPosition.x - newPos.x) * 90. / 1920.;
+    bet = (pointerPosition.y - newPos.y) * 90. / 1080.;
     
-    if (dx < 0) {
-        dx += 360.;
+    if (alph < 0) {
+        alph += 360.;
     }
     //dx *= (float)5e-4 * -1.;
     //dy *= (float)5e-4;
 
     pointerPosition = newPos;
-    display.Update(0, 0, dx, dy);
 }
 
 void App::PointerPressed(CoreWindow^ Window, PointerEventArgs^ Args) {
@@ -81,16 +92,16 @@ void App::PointerReleased(CoreWindow^ Window, PointerEventArgs^ Arg) {
 void App::KeyDown(CoreWindow^ Window, KeyEventArgs^ Args) {
     VirtualKey key = Args->VirtualKey;
     if (key == (VirtualKey)87) {
-        display.Update(SEN, 0, 0, 0);
+        dt += SEN;
     }
     if (key == (VirtualKey)83) {
-        display.Update(-SEN, 0, 0, 0);
+        dt -= SEN;
     }
     if (key == (VirtualKey)65) {
-        display.Update(0, -SEN, 0, 0);
+        ds -= SEN;
     }
     if (key == (VirtualKey)68) {
-        display.Update(0, SEN, 0, 0);
+        ds += SEN;
     }
     if (key == (VirtualKey)13) {
         display.newSetOfPoints();

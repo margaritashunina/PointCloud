@@ -1,5 +1,5 @@
 #pragma once
-#include "pch.h"
+
 #include "PointDisplay.h"
 
 using namespace Windows::ApplicationModel;
@@ -37,5 +37,8 @@ private:
     bool PointerLocked;
     XMFLOAT2 pointerPosition;
     PointDisplay display;
+    
+    double dt, ds;
+    double alph, bet;
 };
 

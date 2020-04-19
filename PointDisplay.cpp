@@ -7,6 +7,7 @@
 Array<byte>^ loadShaderFiles(std::string File) {
     Array<byte>^ shaderData = nullptr;
     std::ifstream shaderFile(File, std::ios::in | std::ios::binary | std::ios::ate);
+    Platform::String^ localfolder = Windows::Storage::ApplicationData::Current->LocalFolder->Path;
 
     if (shaderFile.is_open()) {
         int length = (int)shaderFile.tellg();
@@ -117,67 +118,43 @@ void PointDisplay::InitGraphics() {
     viewVec.z = 1.;
     pitch = 0;
     raw = 0;
-    vertex* sample = new vertex[NMAX];
 
-    float a = -1.0, b = -0.5;
+    InitScene();
+}
+
+void PointDisplay::InitScene() {
+    KDscene.setUwpPaint(context);
+
     std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
-    std::uniform_real_distribution<float> dis(a, b);
+    //KDscene.randomData(NMAX, rng);
 
-    float dx = 1. / M, dy = dx;
-    float r = 0.2, R = 0.5 - r;
-    int id = 0;
-    for (int i = -M/2; i < M/2; ++i) {
-        for (int j = -M/2; j < M/2; ++j) {
-            float x = i * dx;
-            float y = j * dy;
-            sample[id].x = x;
-            sample[id].y = y;
-            sample[id].z = sqrt(r * r - R * R - x * x - y * y + 2 * R * sqrt(x * x + y * y));
-            ++id;
+    std::ifstream dataFile("C:/Users/jason/AppData/Local/Packages/10960d78-4751-4bb8-8ded-94074895938b_t9sbtj4kj4cst/LocalState/output.txt", std::ios::in);
 
-            sample[id].x = x;
-            sample[id].y = y;
-            sample[id].z = -sqrt(r * r - R * R - x * x - y * y + 2 * R * sqrt(x * x + y * y));
-            ++id;
-        }
+    if (dataFile.is_open()) {
+        KDscene.readScene(dataFile);
     }
 
-    for (int i = 0; i < N; i += 6) {
-        sample[id].x = a;
-        sample[id].y = dis(rng);
-        sample[id].z = dis(rng);
+    KDscene.initScene();
 
-        sample[id + 1].x = b;
-        sample[id + 1].y = dis(rng);
-        sample[id + 1].z = dis(rng);
+    int sz = NMAX;
+    const pt* dt = KDscene.getData(sz);
 
-        sample[id + 2].x = dis(rng);
-        sample[id + 2].y = a;
-        sample[id + 2].z = dis(rng);
-
-        sample[id + 3].x = dis(rng);
-        sample[id + 3].y = b;
-        sample[id + 3].z = dis(rng);
-
-        sample[id + 4].x = dis(rng);
-        sample[id + 4].y = dis(rng);
-        sample[id + 4].z = a;
-
-        sample[id + 5].x = dis(rng);
-        sample[id + 5].y = dis(rng);
-        sample[id + 5].z = b;
-
-        id += 6;
+    vertex* fdt = new vertex[sz];
+    for (int i = 0; i < sz; ++i) {
+        fdt[i].x = dt[i].x_;
+        fdt[i].y = dt[i].y_;
+        fdt[i].z = dt[i].z_;
     }
 
-    D3D11_BUFFER_DESC bufDescription = { 0 }; 
-    bufDescription.ByteWidth = sizeof(vertex) * NMAX;
+    D3D11_BUFFER_DESC bufDescription = { 0 };
+    bufDescription.ByteWidth = sizeof(vertex) * sz;
     bufDescription.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-    D3D11_SUBRESOURCE_DATA subResData = { sample, 0, 0 };
+    D3D11_SUBRESOURCE_DATA subResData = { fdt, 0, 0 };
     device->CreateBuffer(&bufDescription, &subResData, &vertexbuffer);
 
-    delete[] sample;
+    KDscene.deleteData();
+    delete[] fdt;
 }
 
 void PointDisplay::InitMatrix() {
@@ -190,8 +167,8 @@ void PointDisplay::InitMatrix() {
     CoreWindow^ window = CoreWindow::GetForCurrentThread();
     float xScale = 1.42814801f;
     float yScale = 1.42814801f;
-    float height = window->Bounds.Height;
-    float width = window->Bounds.Width;
+    float height = 9.; //window->Bounds.Height;
+    float width = 16.; //window->Bounds.Width;
 
     if (width > height) {
         xScale = yScale * height / width;
@@ -206,6 +183,10 @@ void PointDisplay::InitMatrix() {
         0.0f, 0.0f, -1.0f, -0.01f,
         0.0f, 0.0f, -1.0f, 0.0f
     );
+}
+
+void PointDisplay::InitDepthStencil() {
+
 }
 
 void PointDisplay::InitPipeline() {
@@ -226,6 +207,9 @@ void PointDisplay::InitPipeline() {
 
     InitMatrix();
 
+    //FUN 
+    //InitColors();
+
     D3D11_SUBRESOURCE_DATA matixBufferSubData = { &mBufferData, 0, 0 };
 
     device->CreateBuffer(
@@ -242,7 +226,7 @@ void PointDisplay::InitPipeline() {
 
     D3D11_INPUT_ELEMENT_DESC inputDescrip[] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+        {"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
     };
 
     device->CreateInputLayout(inputDescrip, ARRAYSIZE(inputDescrip), vertexShaderFile->Data, vertexShaderFile->Length, &inputlayout);
@@ -278,13 +262,18 @@ void PointDisplay::UpdateViewMatrix() {
     );
 }
 
+void PointDisplay::UpdateScene(float dx, float dy, float dz) {
+    KDscene.moveViewer(dx, dy, dz);
+    KDscene.setViewVector(pt(viewVec.x, viewVec.y, viewVec.z));
+}
+
 void PointDisplay::Update(float df, float dlr, float dRaw, float dPitch) {
     pitch += dPitch;
-    if (pitch > 85.) {
-        pitch = 85.;
+    if (pitch > 90. - 180. / 36.) {
+        pitch = 90. - 180. / 36.;
     }
-    if (pitch < -85.) {
-        pitch = -85.;
+    if (pitch < -(90. - 180. / 36.)) {
+        pitch = -(90. - 180. / 36.);
     }
 
     raw += dRaw;
@@ -307,6 +296,8 @@ void PointDisplay::Update(float df, float dlr, float dRaw, float dPitch) {
     viewVec.x = sinRaw * cosPitch;
     viewVec.y = sinPitch;
 
+    DirectX::XMFLOAT4 oldPoint = viewPoint;
+
     viewPoint.x += viewVec.x * df;
     viewPoint.y -= viewVec.y * df;
     viewPoint.z += viewVec.z * df;
@@ -321,6 +312,7 @@ void PointDisplay::Update(float df, float dlr, float dRaw, float dPitch) {
     viewPoint.x += sideVecx * dlr;
     viewPoint.z += sideVecz * dlr;
 
+    UpdateScene((oldPoint.x - viewPoint.x), (oldPoint.y - viewPoint.y), (oldPoint.z - viewPoint.z));
     UpdateViewMatrix();
     UpdateMatrixBuffer();
 }
@@ -328,8 +320,10 @@ void PointDisplay::Update(float df, float dlr, float dRaw, float dPitch) {
 void PointDisplay::Render() {
     context->OMSetRenderTargets(1, rendertarget.GetAddressOf(), nullptr);
 
-    //float color[] = {0, 0, 0, 1.0}; //BACKGROUND COLOR
-    float color[] = {1.0, 1.0, 1.0, 1.0}; //BACKGROUND COLOR
+    float color[] = {0, 0, 0, 1.0}; //BACKGROUND COLOR
+    //float color[] = {1.0, 1.0, 1.0, 1.0}; //BACKGROUND COLOR
+    //float color[] = {colors[colorIt].x / 255., colors[colorIt].y / 255., colors[colorIt].z / 255., 1.0}; //BACKGROUND COLOR
+
     context->ClearRenderTargetView(rendertarget.Get(), color);
 
     UINT vertexSize = sizeof(vertex);
@@ -337,10 +331,41 @@ void PointDisplay::Render() {
 
     context->IASetVertexBuffers(0, 1, vertexbuffer.GetAddressOf(), &vertexSize, &zero);
     context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+    //context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    for (int u : displayIDs) {
-        context->Draw(1, u);
-    }
+    //pt jojoVec = KDscene.getViewVector();
+    //pt jojoPos = KDscene.getPosViewer();
 
+    KDscene.calcFrame();
+    //context->Draw(NMAX, 0);
     swapchain->Present(1, 0);
 }
+
+//FUN
+/*
+void PointDisplay::InitColors() {
+    colorIt = 0;
+    for (int i = 0; i <= 255; ++i) {
+        colors.push_back({ 255., (float)i, 0. });
+    }
+    for (int i = 255; i >= 0; --i) {
+        colors.push_back({ (float)i, 255., 0. });
+    }
+    for (int i = 0; i <= 255; ++i) {
+        colors.push_back({ 0., 255, (float)i });
+    }
+    for (int i = 255; i >= 0; --i) {
+        colors.push_back({ 0., (float)i, 255. });
+    }
+    for (int i = 0; i <= 255; ++i) {
+        colors.push_back({ (float)i, 0., 255. });
+    }
+    for (int i = 255; i >= 0; --i) {
+        colors.push_back({ 255., 0., (float)i });
+    }
+}
+
+void PointDisplay::UpdateColors() {
+    colorIt = (colorIt + 1) % colors.size();
+}
+*/

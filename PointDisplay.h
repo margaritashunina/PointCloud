@@ -1,9 +1,11 @@
 #pragma once
 
+#include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <chrono>
 #include <random>
+#include "scene.hpp"
 
 using namespace Microsoft::WRL;
 using namespace Windows::UI::Core;
@@ -22,7 +24,7 @@ const int M = 222;
 const int N = M * M * 6 / 4;
 const int NMAX = 2 * M * M + N;
 
-const float PI = acos(-1.);
+//const float PI = acos(-1.);
 
 struct vertex {
 	float x, y, z;
@@ -43,17 +45,24 @@ public:
 	void Render();
 	void newSetOfPoints();
 
+	ComPtr<ID3D11DeviceContext1> context;
+	//FUN
+	//void UpdateColors();
+
 private:
+	void InitScene();
 	void InitGraphics();
+	void InitDepthStencil();
 	void InitPipeline();
 	void InitMatrix();
 
 	void UpdateViewMatrix();
 	void UpdateMatrixBuffer();
+	void UpdateScene(float dx, float dy, float dz);
 	
 
 	ComPtr<ID3D11Device1> device;
-	ComPtr<ID3D11DeviceContext1> context;
+	
 	ComPtr<IDXGISwapChain1> swapchain;
 	ComPtr<ID3D11RenderTargetView> rendertarget;
 	ComPtr<ID3D11Buffer> vertexbuffer;
@@ -67,5 +76,11 @@ private:
 	float pitch, raw;
 	DirectX::XMFLOAT4 viewPoint;
 	DirectX::XMFLOAT4 viewVec;
+	Scene KDscene;
+	
+	//FUN
+	//std::vector<vertex> colors;
+	//int colorIt;
+	//void InitColors();
 };
 
